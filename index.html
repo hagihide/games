@@ -72,13 +72,13 @@ const render = Render.create({
 });
 
 // エンジンの時間スケールを調整して、物体の動きを遅くする
-engine.timing.timeScale = 0.7;
+engine.timing.timeScale = 0.65;
 
 // ゲームの状態
 let currentCircle = null;
 let score = 0;
 const circleSizes = [8, 13, 20, 30, 45, 60, 85, 110, 140]; // 可能な円のサイズ
-//const circleColor = [#ff3300, #0080f0, #ff3300, #f033f0, #ff3300, #2e8b57, #ffc0cb, #a0522d, #006400]; // 円の色
+const circleColor = ['#ff3300', '#0080f0', '#ff3300', '#f033f0', '#ff3300', '#2e8b57', '#ffc0cb', '#a0522d', '#006400']; // 円の色
 
 // 床と壁を作成
 const floor = Bodies.rectangle(400, 590, 810, 60, { isStatic: true });
@@ -94,9 +94,9 @@ function createCircle(x, y, sizeIndex) {
     const radius = circleSizes[sizeIndex];
     const circle = Bodies.circle(x, y, radius, {
         restitution: 0.6,
-        friction: 0.0005,
+        friction: 0.001,
         render: {
-            fillStyle: '#a0522d' //circleColor[sizeIndex]
+            fillStyle: circleColor[sizeIndex]
         }
     });
     circle.sizeIndex = sizeIndex; // サイズインデックスを保持
@@ -120,7 +120,7 @@ document.addEventListener('keydown', function(event) {
         // スペースバーで円を落とす
         Body.setStatic(currentCircle, false);
         const nextSizeIndex = Math.floor(Math.random() * (circleSizes.length-4));
-        currentCircle = createCircle(400, 100, nextSizeIndex); // 新しい円を生成
+        currentCircle = createCircle(400, 0-circleSizes[nextSizeIndex], nextSizeIndex); // 新しい円を生成
     } else if (event.code === 'ArrowLeft' && currentCircle !== null) {
         // 左キーで円を左に移動
         Body.translate(currentCircle, { x: -10, y: 0 });
@@ -132,7 +132,7 @@ document.addEventListener('keydown', function(event) {
 
 // フラッシュさせるためのスタイル
 const flashStyle = {
-    fillStyle: 'red'
+    fillStyle: 'white'
 };
 
 // フラッシュ効果を管理するための変数
