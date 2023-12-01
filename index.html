@@ -78,7 +78,7 @@ engine.timing.timeScale = 0.7;
 let currentCircle = null;
 let score = 0;
 const circleSizes = [8, 13, 20, 30, 45, 60, 85, 110, 140]; // 可能な円のサイズ
-const circleColor = [#ff3300, #0080f0, #ff3300, #f033f0, #ff3300, #2e8b57, #ffc0cb, #a0522d, #006400]; // 円の色
+//const circleColor = [#ff3300, #0080f0, #ff3300, #f033f0, #ff3300, #2e8b57, #ffc0cb, #a0522d, #006400]; // 円の色
 
 // 床と壁を作成
 const floor = Bodies.rectangle(400, 590, 810, 60, { isStatic: true });
@@ -96,7 +96,7 @@ function createCircle(x, y, sizeIndex) {
         restitution: 0.6,
         friction: 0.0005,
         render: {
-            fillStyle: circleColor[sizeIndex];
+            fillStyle: '#a0522d'; //circleColor[sizeIndex]
         }
     });
     circle.sizeIndex = sizeIndex; // サイズインデックスを保持
