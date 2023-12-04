@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let lasers = [];
     let score = 0;
     let gameOver = false;
-    let enemySpawnCounter = 0;
+    let enemySpawnCounter = 200;
     let currentColor = 'red'; // 初期色は赤
 
     canvas.addEventListener("click", function(event) {
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
             color: color,
             invincible: false,
             invincibleCounter: 0,
-            moveX: Math.random() < 0.5 ? 1.5 : -1.5,
+            moveX: Math.random() < 0.5 ? 0.5 : -0.5,
             moveCounter: 0,
             moveDown: false
         });
@@ -77,10 +77,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     laser.y += (dy / distance) * 10;
                 } else {
                     if (laser.radius < 50) {
-                        laser.radius += 50 / 70; // 1秒間に20ピクセルまで拡大
+                        laser.radius += 50 / 70; // 70フレで50ピクセルまで拡大
                     } else {
                         laser.expanding = false;
-                        laser.active = false; // 半径が20に達したらレーザーを非アクティブにする
+                        laser.active = false; // 半径が最大に達したらレーザーを非アクティブにする
                     }
                 }
 
@@ -94,7 +94,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 enemies = enemies.filter(e => e !== enemy);
                                 score++;
                             } else {
-//                                enemy.y += 20;
                                 enemy.invincible = true;
                                 enemy.invincibleCounter = 0;
                                 enemy.color = 'white'; // 無敵状態の色を白に
@@ -108,14 +107,14 @@ document.addEventListener("DOMContentLoaded", function() {
         enemies.forEach(enemy => {
             if (enemy.invincible) {
                 enemy.invincibleCounter++;
-                enemy.y += 2;
-                if (enemy.invincibleCounter > 60) { // 0.5秒後
+                enemy.y += 1;
+                if (enemy.invincibleCounter > 60) { // 無敵フレーム
                     enemy.invincible = false;
                     enemy.color = Math.random() < 0.5 ? 'red' : 'blue'; // 色を再度ランダムに設定
                 }
             } else {
                 if (!enemy.moveDown) {
-                    if (enemy.moveCounter < 160) { // Move horizontally for 2 seconds
+                    if (enemy.moveCounter < (200-score)) { // Move horizontally
                         enemy.x += enemy.moveX;
                         if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) enemy.moveX *= -1;
                         enemy.moveCounter++;
@@ -133,12 +132,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
 
-            if (enemy.y > canvas.height - enemy.height) {
+            if (enemy.y >= canvas.height - enemy.height) {
                 gameOver = true;
             }
         });
 
-        if (enemySpawnCounter > 200 - score*2) {
+        if (enemySpawnCounter > 300 - score*3) {
             spawnEnemy();
             enemySpawnCounter = 0;
         } else {
