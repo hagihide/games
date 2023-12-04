@@ -5,22 +5,23 @@
     <style>
         #gameCanvas {
             width: 320px;
-            height: 700px;
+            height: 600px;
             border: 1px solid black;
+            background-color: #000000;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    
-    
-    
+
     <script>
+
+
 document.addEventListener("DOMContentLoaded", function() {
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     canvas.width = 320;
-    canvas.height = 800;
+    canvas.height = 600;
 
     let enemies = [];
     let lasers = [];
@@ -33,7 +34,16 @@ document.addEventListener("DOMContentLoaded", function() {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        lasers.push({ x: canvas.width / 2, y: canvas.height, targetX: x, targetY: y, radius: 1, active: true, expanding: true, color: currentColor });
+        lasers.push({ 
+            x: canvas.width / 2, 
+            y: canvas.height, 
+            targetX: x, 
+            targetY: y, 
+            radius: 1, 
+            active: true, 
+            expanding: true, 
+            color: currentColor 
+        });
         currentColor = (currentColor === 'red') ? 'blue' : 'red'; // 色を切り替える
     });
 
@@ -55,37 +65,55 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function updateGame() {
         lasers.forEach(laser => {
-            let dx = laser.targetX - laser.x;
-            let dy = laser.targetY - laser.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (laser.expanding) {
+                let dx = laser.targetX - laser.x;
+                let dy = laser.targetY - laser.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance > 10 && laser.expanding) {
-                laser.x += (dx / distance) * 10;
-                laser.y += (dy / distance) * 10;
-            } else {
-                laser.expanding = false;
-                if (laser.radius < 40) {
-                    laser.radius += 40 / 60; // 1秒間に20ピクセルまで拡大
+                if (distance > 10) {
+                    laser.x += (dx / distance) * 10;
+                    laser.y += (dy / distance) * 10;
                 } else {
-                    laser.active = false;
+                    if (laser.radius < 50) {
+                        laser.radius += 50 / 40; // 1秒間に20ピクセルまで拡大
+                    } else {
+                        laser.expanding = false;
+                        laser.active = false; // 半径が20に達したらレーザーを非アクティブにする
+                    }
                 }
+
+                enemies.forEach(enemy => {
+                    if (!enemy.invincible && laser.active) {
+                        const dx = enemy.x + enemy.width / 2 - laser.x;
+                        const dy = enemy.y + enemy.height / 2 - laser.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < laser.radius + Math.max(enemy.width, enemy.height) / 2) {
+                            if (laser.color === enemy.color) {
+                                enemies = enemies.filter(e => e !== enemy);
+                                score++;
+                            } else {
+//                                enemy.y += 20;
+                                enemy.invincible = true;
+                                enemy.invincibleCounter = 0;
+                                enemy.color = 'white'; // 無敵状態の色を白に
+                            }
+                        }
+                    }
+                });
             }
         });
-
-        lasers = lasers.filter(laser => laser.active);
 
         enemies.forEach(enemy => {
             if (enemy.invincible) {
                 enemy.invincibleCounter++;
                 enemy.y += 2;
-
-                if (enemy.invincibleCounter > 90) { // 1.5秒後
+                if (enemy.invincibleCounter > 60) { // 0.5秒後
                     enemy.invincible = false;
                     enemy.color = Math.random() < 0.5 ? 'red' : 'blue'; // 色を再度ランダムに設定
                 }
             } else {
                 if (!enemy.moveDown) {
-                    if (enemy.moveCounter < 120) { // Move horizontally for 2 seconds
+                    if (enemy.moveCounter < 160) { // Move horizontally for 2 seconds
                         enemy.x += enemy.moveX;
                         if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) enemy.moveX *= -1;
                         enemy.moveCounter++;
@@ -103,30 +131,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
 
-            // 衝突判定
-            lasers.forEach(laser => {
-                const dx = enemy.x + enemy.width / 2 - laser.x;
-                const dy = enemy.y + enemy.height / 2 - laser.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < laser.radius + Math.max(enemy.width, enemy.height) / 2 && !enemy.invincible) {
-                    if (laser.color === enemy.color) {
-                        enemies = enemies.filter(e => e !== enemy);
-                        score++;
-                    } else {
-//                        enemy.y += 20;
-                        enemy.invincible = true;
-                        enemy.invincibleCounter = 0;
-                        enemy.color = 'black'; // 無敵状態の色を白に
-                    }
-                }
-            });
-
             if (enemy.y > canvas.height - enemy.height) {
                 gameOver = true;
             }
         });
 
-        if (enemySpawnCounter > 300 - score) {
+        if (enemySpawnCounter > 200 - score*2) {
             spawnEnemy();
             enemySpawnCounter = 0;
         } else {
@@ -138,15 +148,17 @@ document.addEventListener("DOMContentLoaded", function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         lasers.forEach(laser => {
-            ctx.strokeStyle = laser.color;
-            ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, canvas.height);
-            ctx.lineTo(laser.x, laser.y);
-            ctx.stroke();
-            ctx.fillStyle = laser.color;
-            ctx.beginPath();
-            ctx.arc(laser.x, laser.y, laser.radius, 0, 2 * Math.PI);
-            ctx.fill();
+            if (laser.active) {
+                ctx.strokeStyle = laser.color;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, canvas.height);
+                ctx.lineTo(laser.x, laser.y);
+                ctx.stroke();
+                ctx.fillStyle = laser.color;
+                ctx.beginPath();
+                ctx.arc(laser.x, laser.y, laser.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
         });
 
         enemies.forEach(enemy => {
@@ -155,10 +167,12 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         ctx.font = '20px Arial';
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = 'white';
         ctx.fillText(`Score: ${score}`, 10, 30);
 
         if (gameOver) {
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'White';
             ctx.fillText("Game Over", canvas.width / 2 - 40, canvas.height / 2);
         }
     }
@@ -173,9 +187,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     gameLoop();
 });
-
-
-
 
 
     
