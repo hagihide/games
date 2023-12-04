@@ -13,7 +13,9 @@
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-
+    
+    
+    
     <script>
 
 
@@ -57,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
             color: color,
             invincible: false,
             invincibleCounter: 0,
-            moveX: Math.random() < 0.5 ? 2 : -2,
+            moveX: Math.random() < 0.5 ? 1.5 : -1.5,
             moveCounter: 0,
             moveDown: false
         });
@@ -75,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     laser.y += (dy / distance) * 10;
                 } else {
                     if (laser.radius < 50) {
-                        laser.radius += 50 / 40; // 1秒間に20ピクセルまで拡大
+                        laser.radius += 50 / 70; // 1秒間に20ピクセルまで拡大
                     } else {
                         laser.expanding = false;
                         laser.active = false; // 半径が20に達したらレーザーを非アクティブにする
@@ -171,9 +173,11 @@ document.addEventListener("DOMContentLoaded", function() {
         ctx.fillText(`Score: ${score}`, 10, 30);
 
         if (gameOver) {
-            ctx.font = '20px Arial';
+            ctx.font = '24px Arial';
             ctx.fillStyle = 'White';
-            ctx.fillText("Game Over", canvas.width / 2 - 40, canvas.height / 2);
+            ctx.fillText("Game Over", canvas.width / 2 - 55, canvas.height / 2-20);
+            ctx.font = '20px Arial';
+            ctx.fillText("Replay:F5", canvas.width / 2 - 50, canvas.height / 2+20);
         }
     }
 
@@ -187,6 +191,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     gameLoop();
 });
+
 
 
     
